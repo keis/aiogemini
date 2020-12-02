@@ -5,7 +5,7 @@ from typing import Optional
 
 from yarl import URL
 
-from .. import GEMINI_MEDIA_TYPE
+from .. import Status, GEMINI_MEDIA_TYPE
 from ..abstract import BaseResponse, BaseRequest
 
 BUFFER_SIZE = 2 ** 10
@@ -37,7 +37,7 @@ class ResponseParser:
         headerend = data.index(b'\r\n')
         header = data[:headerend].decode('utf-8')
         status, meta = header.split(' ', 1)
-        response = Response.from_meta(int(status), meta)
+        response = Response.from_meta(Status(int(status)), meta)
         stream = asyncio.StreamReader(limit=BUFFER_SIZE)
         self.stream = response.stream = stream
         stream.feed_data(data[headerend+2:])

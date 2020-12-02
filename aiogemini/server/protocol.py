@@ -6,7 +6,7 @@ from typing import Awaitable, Callable, Optional
 
 from yarl import URL
 
-from .. import GEMINI_MEDIA_TYPE
+from .. import Status, GEMINI_MEDIA_TYPE
 from ..abstract import BaseRequest, BaseResponse
 
 
@@ -33,7 +33,10 @@ class Response(BaseResponse):
             None,
             request.protocol._loop
         )
-        self.stream.write(f"{self.status} {self.meta}\r\n".encode('utf-8'))
+        self.stream.write(f"{self.status.value} {self.meta}\r\n".encode('utf-8'))
+
+        if self.status != Status.SUCCESS:
+            self.write_eof()
 
         if self.data:
             self.stream.write(self.data)

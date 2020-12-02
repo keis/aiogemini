@@ -1,13 +1,12 @@
 import asyncio
 import ssl
 
-from .. import GEMINI_PORT
+from .. import Status, GEMINI_PORT
 from .protocol import Protocol, Request, Response
 
 
 async def hello(req: Request) -> Response:
-    response = "Hallo, world!"
-    return Response(20, data=response.encode('utf-8'))
+    return Response(Status.NOT_FOUND)
 
 
 async def hello2(req: Request) -> Response:
@@ -19,7 +18,7 @@ async def hello2(req: Request) -> Response:
     loop = asyncio.get_running_loop()
     loop.create_task(world())
 
-    response = Response(20)
+    response = Response(Status.SUCCESS)
     response.start(req)
     response.write(b"Hallo, ")
 
@@ -34,7 +33,7 @@ async def main():
     sslcontext.load_cert_chain('localhost.crt', 'localhost.key')
 
     server = await loop.create_server(
-        lambda: Protocol(hello2, loop=loop),
+        lambda: Protocol(hello, loop=loop),
         '127.0.0.1',
         GEMINI_PORT,
         ssl=sslcontext

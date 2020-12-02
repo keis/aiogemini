@@ -3,7 +3,7 @@ from typing import Optional, Type, TypeVar
 
 from yarl import URL
 
-from . import GEMINI_MEDIA_TYPE
+from . import Status, GEMINI_MEDIA_TYPE
 
 _Request = TypeVar('_Request', bound='BaseRequest')
 _Response = TypeVar('_Response', bound='BaseResponse')
@@ -20,7 +20,7 @@ class BaseRequest:
 
 @dataclass
 class BaseResponse:
-    status: int
+    status: Status
     reason: Optional[str] = None
     content_type: str = GEMINI_MEDIA_TYPE
 
@@ -30,10 +30,10 @@ class BaseResponse:
             return self.content_type
         if self.reason:
             return self.reason
-        return str(self.status)
+        return self.status.name
 
     @classmethod
-    def from_meta(cls: Type[_Response], status: int, meta: str) -> _Response:
+    def from_meta(cls: Type[_Response], status: Status, meta: str) -> _Response:
         return cls(
             status=status,
             **({'content_type': meta} if status == 20 else {'reason': meta})
