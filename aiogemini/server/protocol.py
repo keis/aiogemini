@@ -7,31 +7,18 @@ from typing import Awaitable, Callable, Optional
 from yarl import URL
 
 from .. import GEMINI_MEDIA_TYPE
+from ..abstract import BaseRequest, BaseResponse
 
-@dataclass
-class Request:
-    url: URL
 
+class Request(BaseRequest):
     transport: Optional[asyncio.Transport] = field(default=None, init=False, repr=False)
     protocol: Optional[Protocol] = field(default=None, init=False, repr=False)
 
 
 @dataclass
-class Response:
-    status: int = 20
-    reason: Optional[str] = None
-    content_type: str = GEMINI_MEDIA_TYPE
-
+class Response(BaseResponse):
     data: Optional[bytes] = None
     stream: Optional[asyncio.StreamWriter] = field(default=None, repr=False)
-
-    @property
-    def meta(self) -> str:
-        if self.status == 20:
-            return self.content_type
-        if self.reason:
-            return self.reason
-        return str(self.status)
 
     @property
     def has_started(self) -> bool:

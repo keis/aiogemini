@@ -7,7 +7,7 @@ from .protocol import Protocol, Request, Response
 
 async def hello(req: Request) -> Response:
     response = "Hallo, world!"
-    return Response(20, response.encode('utf-8'))
+    return Response(20, data=response.encode('utf-8'))
 
 
 async def hello2(req: Request) -> Response:
