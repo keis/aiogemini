@@ -34,4 +34,3 @@ class Server:
         )
         async with server:
             await server.serve_forever()
-

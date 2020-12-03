@@ -11,7 +11,8 @@ from ..abstract import BaseRequest, BaseResponse
 
 
 class Request(BaseRequest):
-    transport: Optional[asyncio.Transport] = field(default=None, init=False, repr=False)
+    transport: Optional[asyncio.Transport] = \
+        field(default=None, init=False, repr=False)
     protocol: Optional[Protocol] = field(default=None, init=False, repr=False)
 
 
@@ -33,7 +34,8 @@ class Response(BaseResponse):
             None,
             request.protocol._loop
         )
-        self.stream.write(f"{self.status.value} {self.meta}\r\n".encode('utf-8'))
+        self.stream.write(
+            f"{self.status.value} {self.meta}\r\n".encode('utf-8'))
 
         if self.status != Status.SUCCESS:
             self.write_eof()
@@ -95,7 +97,7 @@ class Protocol(asyncio.Protocol):
         self._parser = RequestParser()
 
     def connection_made(self, transport: asyncio.Transport) -> None:
-        #TODO: Check for ssl enabled
+        # TODO: Check for ssl enabled
         self.transport = transport
 
     def connection_lost(self, exc) -> None:

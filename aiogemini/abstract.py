@@ -33,9 +33,15 @@ class BaseResponse:
         return self.status.name
 
     @classmethod
-    def from_meta(cls: Type[_Response], status: Status, meta: str) -> _Response:
+    def from_meta(
+        cls: Type[_Response],
+        status: Status,
+        meta: str
+    ) -> _Response:
         return cls(
             status=status,
-            **({'content_type': meta} if status == Status.SUCCESS else {'reason': meta})
+            **(
+                {'content_type': meta} if status == Status.SUCCESS else
+                {'reason': meta}
+            )
         )
-
