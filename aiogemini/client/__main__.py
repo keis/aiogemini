@@ -1,10 +1,10 @@
 import argparse
 import asyncio
-import ssl
 
 from yarl import URL
 
 from .. import GEMINI_PORT
+from ..security import TOFUContext
 from . import Client
 
 
@@ -13,13 +13,8 @@ async def main():
     parser.add_argument('url', type=URL)
     args = parser.parse_args()
 
-    # FIXME
-    sslcontext = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-    sslcontext.check_hostname = False
-    sslcontext.verify_mode = ssl.CERT_NONE
-    sslcontext.load_verify_locations('localhost.crt')
-
-    client = Client(sslcontext)
+    certs = {}
+    client = Client(TOFUContext(certs))
     resp = await client.get(args.url)
 
     print("header", resp)
