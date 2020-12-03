@@ -1,9 +1,10 @@
 import argparse
 import asyncio
+import sys
 
 from yarl import URL
 
-from .. import GEMINI_PORT
+from .. import GEMINI_PORT, Status
 from ..security import TOFUContext
 from . import Client
 
@@ -17,12 +18,15 @@ async def main():
     client = Client(TOFUContext(certs))
     resp = await client.get(args.url)
 
-    print("header", resp)
-    while True:
-        data = await resp.read(2 ** 6)
-        print("data", data)
-        if len(data) == 0:
-            break
+    if resp.status == Status.SUCCESS:
+        while True:
+            data = await resp.read(2 ** 8)
+            sys.stdout.buffer.write(data)
+            if len(data) == 0:
+                break
+    else:
+        print(f"{resp.status.name}: {resp.reason}", file=sys.stderr)
+        sys.exit(resp.status.value)
 
 
 if __name__ == '__main__':
