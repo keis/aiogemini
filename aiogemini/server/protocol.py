@@ -53,11 +53,23 @@ _RequestHandler = Callable[[Request], Awaitable[Response]]
 
 
 class RequestParser:
+    buffer: Optional[bytes] = bytes()
+
     def feed_data(self, data: bytes) -> Optional[Request]:
-        # TODO: Deal with partial input
-        end = data.index(b'\r\n')
+        if self.buffer is None:
+            raise ValueError("Parser is closed")
+
+        self.buffer += data
+        try:
+            end = self.buffer.index(b'\r\n')
+        except ValueError:
+            return None
+
+        line = self.buffer[:end]
+        self.buffer = None
+
         return Request(
-            url=URL(data[:end].decode('utf-8'))
+            url=URL(line.decode('utf-8'))
         )
 
     def feed_eof(self) -> None:

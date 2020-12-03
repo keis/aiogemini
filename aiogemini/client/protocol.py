@@ -27,6 +27,7 @@ class Response(BaseResponse):
 
 
 class ResponseParser:
+    buffer: Optional[bytes] = bytes()
     stream: Optional[asyncio.StreamReader] = None
 
     def feed_data(self, data: bytes) -> Optional[Response]:
@@ -34,13 +35,25 @@ class ResponseParser:
             self.stream.feed_data(data)
             return
 
-        headerend = data.index(b'\r\n')
-        header = data[:headerend].decode('utf-8')
+        if self.buffer is None:
+            raise ValueError("Parser is closed")
+
+        self.buffer += data
+        try:
+            headerend = self.buffer.index(b'\r\n')
+        except ValueError:
+            return None
+
+        header = self.buffer[:headerend].decode('utf-8')
         status, meta = header.split(' ', 1)
         response = Response.from_meta(Status(int(status)), meta)
+
         stream = asyncio.StreamReader(limit=BUFFER_SIZE)
         self.stream = response.stream = stream
-        stream.feed_data(data[headerend+2:])
+
+        stream.feed_data(self.buffer[headerend+2:])
+        self.buffer = None
+
         return response
 
     def feed_eof(self) -> None:

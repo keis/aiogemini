@@ -36,6 +36,6 @@ class BaseResponse:
     def from_meta(cls: Type[_Response], status: Status, meta: str) -> _Response:
         return cls(
             status=status,
-            **({'content_type': meta} if status == 20 else {'reason': meta})
+            **({'content_type': meta} if status == Status.SUCCESS else {'reason': meta})
         )
 
