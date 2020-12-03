@@ -2,7 +2,7 @@ import asyncio
 import ssl
 
 from .. import Status, GEMINI_PORT
-from .protocol import Protocol, Request, Response
+from . import Server, Request, Response
 
 
 async def hello(req: Request) -> Response:
@@ -32,15 +32,11 @@ async def main():
     sslcontext.check_hostname = False
     sslcontext.load_cert_chain('localhost.crt', 'localhost.key')
 
-    server = await loop.create_server(
-        lambda: Protocol(hello, loop=loop),
-        '127.0.0.1',
-        GEMINI_PORT,
-        ssl=sslcontext
+    server = Server(
+        sslcontext,
+        hello
     )
-
-    async with server:
-        await server.serve_forever()
+    await server.serve()
 
 
 if __name__ == '__main__':
