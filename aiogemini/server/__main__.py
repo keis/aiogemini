@@ -12,8 +12,8 @@ async def hello(req: Request) -> Response:
 async def hello2(req: Request) -> Response:
     async def world() -> None:
         await asyncio.sleep(2)
-        response.write(b"world!")
-        response.write_eof()
+        await response.write(b"world!")
+        await response.write_eof()
 
     loop = asyncio.get_running_loop()
     loop.create_task(world())
@@ -21,6 +21,24 @@ async def hello2(req: Request) -> Response:
     response = Response(Status.SUCCESS)
     response.start(req)
     response.write(b"Hallo, ")
+
+    return response
+
+
+async def vom(req: Request) -> Response:
+    async def write() -> None:
+        for x in range(2 ** 14):
+            await response.write(data)
+        await response.write_eof()
+        print("KBYE")
+
+    data = ("X" * (2 ** 8)).encode('utf-8')
+
+    loop = asyncio.get_running_loop()
+    loop.create_task(write())
+
+    response = Response(Status.BAD_REQUEST)
+    response.start(req)
 
     return response
 
@@ -34,7 +52,7 @@ async def main():
 
     server = Server(
         sslcontext,
-        hello
+        vom
     )
     await server.serve()
 

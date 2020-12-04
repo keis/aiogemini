@@ -22,8 +22,10 @@ async def main():
         while True:
             data = await resp.read(2 ** 8)
             sys.stdout.buffer.write(data)
+            sys.stdout.buffer.flush()
             if len(data) == 0:
                 break
+            await asyncio.sleep(1)
     else:
         print(f"{resp.status.name}: {resp.reason}", file=sys.stderr)
         sys.exit(resp.status.value)

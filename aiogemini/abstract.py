@@ -20,13 +20,13 @@ class BaseRequest:
 
 @dataclass
 class BaseResponse:
-    status: Status
+    status: Status = Status.SUCCESS
     reason: Optional[str] = None
     content_type: str = GEMINI_MEDIA_TYPE
 
     @property
     def meta(self) -> str:
-        if self.status == 20:
+        if self.status == Status.SUCCESS:
             return self.content_type
         if self.reason:
             return self.reason

@@ -25,30 +25,42 @@ class Response(BaseResponse):
     def has_started(self) -> bool:
         return self.stream is not None
 
-    def start(self, request: Request) -> None:
-        assert request.protocol, "Request should have a protocol"
-        assert request.transport, "Request should have a transport"
-        self.stream = asyncio.StreamWriter(
-            request.transport,
-            request.protocol,
-            None,
-            request.protocol._loop
-        )
+    def _start(
+        self,
+        transport: asyncio.Transport,
+        protocol: asyncio.Protocol,
+        loop: asyncio.AbstractEventLoop
+    ) -> None:
+        self.stream = asyncio.StreamWriter(transport, protocol, None, loop)
         self.stream.write(
             f"{self.status.value} {self.meta}\r\n".encode('utf-8'))
 
         if self.status != Status.SUCCESS:
-            self.write_eof()
+            self.stream.close()
 
         if self.data:
             self.stream.write(self.data)
-            self.write_eof()
+            self.stream.close()
 
-    def write(self, data: bytes) -> None:
+    def start(self, request: Request) -> None:
+        assert request.protocol, "Request should have a protocol"
+        assert request.transport, "Request should have a transport"
+        self._start(
+            request.transport,
+            request.protocol,
+            request.protocol._loop
+        )
+
+    async def write(self, data: bytes) -> None:
         self.stream.write(data)
+        await self.drain()
 
-    def write_eof(self) -> None:
+    async def write_eof(self) -> None:
         self.stream.close()
+        await self.drain()
+
+    async def drain(self) -> None:
+        await self.stream.drain()
 
 
 _RequestHandler = Callable[[Request], Awaitable[Response]]
@@ -79,7 +91,7 @@ class RequestParser:
         pass
 
 
-class Protocol(asyncio.Protocol):
+class Protocol(asyncio.streams.FlowControlMixin):
     transport: Optional[asyncio.Transport]
 
     _loop: asyncio.AbstractEventLoop
@@ -92,6 +104,7 @@ class Protocol(asyncio.Protocol):
         *,
         loop: asyncio.AbstractEventLoop
     ) -> None:
+        super().__init__()
         self._loop = loop
         self._request_handler = request_handler
         self._parser = RequestParser()
@@ -101,6 +114,7 @@ class Protocol(asyncio.Protocol):
         self.transport = transport
 
     def connection_lost(self, exc) -> None:
+        super().connection_lost(exc)
         # TODO: Deal with exc
         self._parser.feed_eof()
 
