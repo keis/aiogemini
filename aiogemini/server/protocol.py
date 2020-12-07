@@ -121,7 +121,6 @@ class Protocol(asyncio.streams.FlowControlMixin):
     def data_received(self, data: bytes) -> None:
         request = self._parser.feed_data(data)
         if request:
-            # TODO: Ignore any other data
             task = self._loop.create_task(self.process_request(request))
             task.add_done_callback(lambda fut: fut.result())
 
@@ -132,6 +131,16 @@ class Protocol(asyncio.streams.FlowControlMixin):
         request.protocol = self
         request.transport = self.transport
 
-        response = await request_handler(request)
+        try:
+            response = await request_handler(request)
+        except Exception as e:
+            # TODO: Detect if response was already started
+            print("Error processing request", request, e)
+            response = Response(
+                Status.TEMPORARY_FAILURE,
+                "Server got in trouble"
+            )
+            response.start(request)
+
         if not response.has_started:
             response.start(request)

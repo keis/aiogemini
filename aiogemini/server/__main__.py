@@ -1,46 +1,12 @@
 import asyncio
 import ssl
 
+from pathlib import Path
+
 from .. import Status, GEMINI_PORT
 from . import Server, Request, Response
 
-
-async def hello(req: Request) -> Response:
-    return Response(Status.NOT_FOUND)
-
-
-async def hello2(req: Request) -> Response:
-    async def world() -> None:
-        await asyncio.sleep(2)
-        await response.write(b"world!")
-        await response.write_eof()
-
-    loop = asyncio.get_running_loop()
-    loop.create_task(world())
-
-    response = Response(Status.SUCCESS)
-    response.start(req)
-    response.write(b"Hallo, ")
-
-    return response
-
-
-async def vom(req: Request) -> Response:
-    async def write() -> None:
-        for x in range(2 ** 14):
-            await response.write(data)
-        await response.write_eof()
-        print("KBYE")
-
-    data = ("X" * (2 ** 8)).encode('utf-8')
-
-    loop = asyncio.get_running_loop()
-    loop.create_task(write())
-
-    response = Response(Status.BAD_REQUEST)
-    response.start(req)
-
-    return response
+from .fileserver import create_fileserver
 
 
 async def main():
@@ -52,7 +18,7 @@ async def main():
 
     server = Server(
         sslcontext,
-        vom
+        create_fileserver(Path.cwd())
     )
     await server.serve()
 
