@@ -11,9 +11,9 @@ from ..abstract import BaseRequest, BaseResponse
 
 
 class Request(BaseRequest):
-    transport: Optional[asyncio.Transport] = \
-        field(default=None, init=False, repr=False)
-    protocol: Optional[Protocol] = field(default=None, init=False, repr=False)
+    transport: Optional[asyncio.Transport] = None
+    protocol: Optional[asyncio.Protocol] = None
+    response: Optional[Response] = None
 
 
 @dataclass
@@ -42,13 +42,21 @@ class Response(BaseResponse):
             self.stream.write(self.data)
             self.stream.close()
 
-    def start(self, request: Request) -> None:
+    def start(
+        self,
+        request: Request,
+        *,
+        loop: asyncio.AbstractEventLoop = None
+    ) -> None:
         assert request.protocol, "Request should have a protocol"
         assert request.transport, "Request should have a transport"
+        if request.response is not None:
+            raise RuntimeError("A response was already started")
+        request.response = self
         self._start(
             request.transport,
             request.protocol,
-            request.protocol._loop
+            loop or asyncio.get_running_loop(),
         )
 
     async def write(self, data: bytes) -> None:
@@ -134,7 +142,6 @@ class Protocol(asyncio.streams.FlowControlMixin):
         try:
             response = await request_handler(request)
         except Exception as e:
-            # TODO: Detect if response was already started
             print("Error processing request", request, e)
             response = Response(
                 Status.TEMPORARY_FAILURE,

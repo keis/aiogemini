@@ -7,10 +7,17 @@ from asyncio import (
 )
 from asynctest import Mock, CoroutineMock
 from matchmock import called_once, called_with
-from hamcrest import assert_that, equal_to, has_property
+from hamcrest import (
+    assert_that,
+    calling,
+    equal_to,
+    has_property,
+    raises,
+)
+from yarl import URL
 
 from aiogemini import Status
-from aiogemini.server import Response
+from aiogemini.server import Request, Response
 
 
 @pytest.fixture
@@ -67,3 +74,19 @@ async def test_drain(
     res._start(transport, protocol, loop)
     await res.drain()
     assert_that(protocol, has_property('_drain_helper', called_once()))
+
+
+def test_multiple_responses_disallowed(
+    protocol: Protocol,
+    transport: Transport,
+    loop: Loop
+) -> None:
+    req = Request(url=URL())
+    req.transport = transport
+    req.protocol = protocol
+    res1 = Response()
+    res1.start(req, loop=loop)
+    res2 = Response()
+    assert_that(
+        calling(res2.start).with_args(req, loop=loop),
+        raises(RuntimeError))
