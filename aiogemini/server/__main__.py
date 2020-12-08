@@ -4,6 +4,7 @@ import ssl
 from pathlib import Path
 
 from .. import Status, GEMINI_PORT
+from ..security import TOFUContext
 from . import Server, Request, Response
 
 from .fileserver import create_fileserver
@@ -12,12 +13,11 @@ from .fileserver import create_fileserver
 async def main():
     loop = asyncio.get_running_loop()
 
-    sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    sslcontext.check_hostname = False
-    sslcontext.load_cert_chain('localhost.crt', 'localhost.key')
+    certs = {}
+    security = TOFUContext(certs, 'localhost.crt', 'localhost.key')
 
     server = Server(
-        sslcontext,
+        security,
         create_fileserver(Path.cwd())
     )
     await server.serve()

@@ -18,7 +18,7 @@ class Client:
         protocol = Protocol(request, loop=loop)
         if request.url.host is None:
             raise ValueError("Request must have absolute url")
-        ssl = self.security.get_ssl_context(request.url.host)
+        ssl = self.security.get_client_ssl_context(request.url.host)
         await loop.create_connection(
             lambda: protocol,
             request.url.host,
