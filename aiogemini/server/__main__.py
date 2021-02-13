@@ -11,7 +11,6 @@ from .fileserver import create_fileserver
 
 
 async def main():
-    loop = asyncio.get_running_loop()
 
     certs = {}
     security = TOFUContext(certs, 'localhost.crt', 'localhost.key')
