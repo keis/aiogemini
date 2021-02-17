@@ -81,7 +81,7 @@ def test_multiple_responses_disallowed(
     transport: Transport,
     loop: Loop
 ) -> None:
-    req = Request(url=URL())
+    req = Request(url=URL('gemini://localhost/some-path'))
     req.transport = transport
     req.protocol = protocol
     res1 = Response()

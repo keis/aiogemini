@@ -13,6 +13,10 @@ _Response = TypeVar('_Response', bound='BaseResponse')
 class BaseRequest:
     url: URL
 
+    def __post_init__(self) -> None:
+        if self.url.host is None:
+            raise ValueError("Request must have absolute url")
+
     @classmethod
     def from_str(cls: Type[_Request], url: str) -> _Request:
         return cls(url=URL(url))
