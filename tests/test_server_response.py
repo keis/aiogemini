@@ -5,12 +5,11 @@ from asyncio import (
     AbstractEventLoop as Loop,
     get_event_loop
 )
-from asynctest import Mock, CoroutineMock
+from unittest.mock import Mock, AsyncMock
 from matchmock import called_once, called_with
 from hamcrest import (
     assert_that,
     calling,
-    equal_to,
     has_property,
     raises,
 )
@@ -31,9 +30,9 @@ def transport() -> Transport:
 
 
 @pytest.fixture
-def protocol(loop: Loop, transport: Transport) -> Protocol:
+def protocol(transport: Transport) -> Protocol:
     protocol = Mock(transport=transport)
-    protocol._drain_helper = CoroutineMock()
+    protocol._drain_helper = AsyncMock()
     return protocol
 
 
@@ -51,7 +50,8 @@ def test_writes_payload_when_started(
     assert_that(transport.close, called_once())
 
 
-def test_closes_when_started_with_error(
+@pytest.mark.asyncio
+async def test_closes_when_started_with_error(
     protocol: Protocol,
     transport: Transport,
     loop: Loop
@@ -61,7 +61,7 @@ def test_closes_when_started_with_error(
     res._start(transport, protocol, loop)
     assert_that(transport.write, called_with(header))
     assert_that(transport.close, called_once())
-    res.write(b'more data')
+    await res.write(b'more data')
 
 
 @pytest.mark.asyncio
