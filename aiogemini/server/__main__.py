@@ -1,22 +1,26 @@
 import asyncio
-import ssl
+import argparse
 
 from pathlib import Path
 
-from .. import Status, GEMINI_PORT
-from ..security import TOFUContext
-from . import Server, Request, Response
+from .. import tofu
+from . import Server
 
 from .fileserver import create_fileserver
 
 
 async def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--cert', type=argparse.FileType('r'), required=True)
+    parser.add_argument(
+        '--key', type=argparse.FileType('r'), required=True)
+    args = parser.parse_args()
 
-    certs = {}
-    security = TOFUContext(certs, 'localhost.crt', 'localhost.key')
+    ssl = tofu.create_server_ssl_context(args.cert.name, args.key.name)
 
     server = Server(
-        security,
+        ssl,
         create_fileserver(Path.cwd())
     )
     await server.serve()

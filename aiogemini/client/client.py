@@ -1,27 +1,26 @@
 import asyncio
+from ssl import SSLContext
 
 from yarl import URL
 
 from .. import GEMINI_PORT
-from ..security import SecurityContext
 from .protocol import Protocol, Request, Response
 
 
 class Client:
-    security: SecurityContext
+    ssl: SSLContext
 
-    def __init__(self, security: SecurityContext) -> None:
-        self.security = security
+    def __init__(self, ssl: SSLContext) -> None:
+        self.ssl = ssl
 
     async def send_request(self, request: Request) -> Response:
         loop = asyncio.get_running_loop()
         protocol = Protocol(request, loop=loop)
-        ssl = self.security.get_client_ssl_context(request.url.host)
         await loop.create_connection(
             lambda: protocol,
             request.url.host,
             request.url.port or GEMINI_PORT,
-            ssl=ssl,
+            ssl=self.ssl,
         )
         return await protocol.response
 
