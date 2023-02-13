@@ -12,7 +12,7 @@ from .chunks import chunks
 RESPONSE =  b'20 text/plain\r\nThis is some very interesting content'
 
 
-def test_parse_simple_response():
+def test_parse_simple_response() -> None:
     parser = ResponseParser()
 
     res = parser.feed_data(RESPONSE)
@@ -29,7 +29,7 @@ def test_parse_simple_response():
 @given(
     just(RESPONSE).flatmap(chunks)
 )
-def test_chunk_input(input):
+def test_chunk_input(input) -> None:
     data, chunks = input
     parser = ResponseParser()
 

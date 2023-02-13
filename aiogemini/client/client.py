@@ -14,6 +14,7 @@ class Client:
         self.ssl = ssl
 
     async def send_request(self, request: Request) -> Response:
+        assert request.url.host, "URL must specify host"
         loop = asyncio.get_running_loop()
         protocol = Protocol(request, loop=loop)
         await loop.create_connection(
