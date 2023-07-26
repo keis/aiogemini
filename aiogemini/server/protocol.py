@@ -46,7 +46,7 @@ class Response(BaseResponse):
         self,
         request: Request,
         *,
-        loop: asyncio.AbstractEventLoop = None
+        loop: asyncio.AbstractEventLoop | None = None
     ) -> None:
         assert request.protocol, "Request should have a protocol"
         assert request.transport, "Request should have a transport"
@@ -60,14 +60,17 @@ class Response(BaseResponse):
         )
 
     async def write(self, data: bytes) -> None:
+        assert self.stream, "Request should be started"
         self.stream.write(data)
         await self.drain()
 
     async def write_eof(self) -> None:
+        assert self.stream, "Request should be started"
         self.stream.close()
         await self.drain()
 
     async def drain(self) -> None:
+        assert self.stream, "Request should be started"
         await self.stream.drain()
 
 
@@ -117,7 +120,8 @@ class Protocol(asyncio.streams.FlowControlMixin):
         self._request_handler = request_handler
         self._parser = RequestParser()
 
-    def connection_made(self, transport: asyncio.Transport) -> None:
+    def connection_made(self, transport: asyncio.BaseTransport) -> None:
+        assert isinstance(transport, asyncio.Transport), "Must have valid transport"
         # TODO: Check for ssl enabled
         self.transport = transport
 

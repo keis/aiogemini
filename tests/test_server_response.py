@@ -38,13 +38,14 @@ def protocol(transport: Transport) -> Protocol:
 
 def test_writes_payload_when_started(
     protocol: Protocol,
-    transport: Transport,
+    transport: Mock,
     loop: Loop
 ) -> None:
     data = b'somedata'
     header = b'20 text/gemini; charset=utf-8\r\n'
     res = Response(data=data)
     res._start(transport, protocol, loop)
+
     assert_that(transport.write, called_with(header))
     assert_that(transport.write, called_with(data))
     assert_that(transport.close, called_once())
@@ -53,7 +54,7 @@ def test_writes_payload_when_started(
 @pytest.mark.asyncio
 async def test_closes_when_started_with_error(
     protocol: Protocol,
-    transport: Transport,
+    transport: Mock,
     loop: Loop
 ) -> None:
     header = b'59 BAD_REQUEST\r\n'

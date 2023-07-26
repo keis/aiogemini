@@ -12,7 +12,7 @@ BUFFER_SIZE = 2 ** 10
 
 
 class Request(BaseRequest):
-    transport: Optional[asyncio.Transport]
+    transport: asyncio.Transport
 
     def start(self) -> None:
         encoded_url = str(self.url).encode('utf-8')
@@ -20,7 +20,7 @@ class Request(BaseRequest):
 
 
 class Response(BaseResponse):
-    stream: Optional[asyncio.StreamReader]
+    stream: asyncio.StreamReader
 
     async def read(self, n=-1) -> bytes:
         return await self.stream.read(n)
@@ -33,7 +33,7 @@ class ResponseParser:
     def feed_data(self, data: bytes) -> Optional[Response]:
         if self.stream:
             self.stream.feed_data(data)
-            return
+            return None
 
         if self.buffer is None:
             raise ValueError("Parser is closed")
@@ -79,7 +79,8 @@ class Protocol(asyncio.Protocol):
         self.request = request
         self.response = loop.create_future()
 
-    def connection_made(self, transport: asyncio.Transport) -> None:
+    def connection_made(self, transport: asyncio.BaseTransport) -> None:
+        assert isinstance(transport, asyncio.Transport), "Must have valid transport"
         self.request.transport = transport
         self.request.start()
 

@@ -26,3 +26,22 @@ jobs:
       - name: Run tests
         run: |
           pytest .
+
+  mypy:
+    name: MyPy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install '.[tests]'
+
+      - name: Run MyPy
+        run: |
+          mypy . --exclude build --exclude setup.py

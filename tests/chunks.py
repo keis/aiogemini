@@ -1,10 +1,11 @@
 from collections import deque
 from itertools import islice
+from typing import Iterable, Generator
 
-from hypothesis.strategies import composite, integers, lists
+from hypothesis.strategies import DrawFn, composite, integers, lists
 
 
-def window(size, items):
+def window(size: int, items: Iterable[int]) -> Generator[deque[int], None, None]:
     i = iter(items)
     win = deque(islice(i, size), maxlen=size)
     yield win
@@ -14,9 +15,9 @@ def window(size, items):
 
 
 @composite
-def chunks(draw, data: bytes):
+def chunks(draw: DrawFn, data: bytes) -> tuple[bytes, list[bytes]]:
     size = len(data)
-    splits = draw(
+    splits: list[int] = draw(
         lists(
             integers(min_value=0, max_value=max(size - 1, 0)),
             unique=True,
