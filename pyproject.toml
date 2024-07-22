@@ -10,7 +10,7 @@ description = "Gemini protocol implementation for asyncio"
 urls = {Homepage = "https://github.com/keis/aiogemini"}
 dependencies = [
     "yarl ~= 1.6",
-    "cryptography >= 3.2,< 42.0",
+    "cryptography >= 3.2,< 44.0",
 ]
 
 [project.readme]
