@@ -8,6 +8,7 @@ authors = [{name = "David Keijser", email = "keijser@gmail.com"}]
 version = "0.2.0"
 description = "Gemini protocol implementation for asyncio"
 urls = {Homepage = "https://github.com/keis/aiogemini"}
+license = "ISC"
 dependencies = [
     "yarl ~= 1.6",
     "cryptography >= 3.2,< 42.0",
